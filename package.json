@@ -1,0 +1,50 @@
+{
+  "name": "baixabaixa",
+  "version": "1.0.0",
+  "description": "BaixaBaixa Desktop App",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/fehhpaes/BaixaBaixa-frontend"
+  },
+  "private": true,
+  "type": "module",
+  "build": {
+    "appId": "com.baixabaixa.app",
+    "publish": [
+      {
+        "provider": "github"
+      }
+    ]
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "lint": "eslint .",
+    "preview": "vite preview",
+    "start": "node run-electron.cjs",
+    "dist": "vite build && electron-builder"
+  },
+  "dependencies": {
+    "axios": "^1.13.6",
+    "better-sqlite3": "^12.8.0",
+    "lucide-react": "^0.577.0",
+    "mongoose": "^9.3.2",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.4",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^6.0.1",
+    "electron": "^34.5.8",
+    "electron-builder": "^25.1.8",
+    "electron-updater": "^6.8.3",
+    "eslint": "^9.39.4",
+    "eslint-plugin-react-hooks": "^7.0.1",
+    "eslint-plugin-react-refresh": "^0.5.2",
+    "globals": "^17.4.0",
+    "vite": "^8.0.1"
+  },
+  "main": "main.cjs"
+}
