@@ -19,15 +19,21 @@ async function pollForWork() {
             const work = res.data;
             console.log(`[Agent] New work found: ${work.url}`);
             
-            // Perform download
+            // Phase 1: Probe the URL
+            const probe = await monitor.probeUrl(work.url);
+            
+            if (!probe.success) {
+                console.error(`[Agent] Probe failed: ${probe.error}`);
+                await api.post(`/agent/${work._id}/status`, { status: 'error', message: probe.error });
+                return;
+            }
+
+            // Phase 2: Perform download
             try {
-                // We use our existing monitor logic but we need to notify the cloud when done
+                console.log(`[Agent] Starting download for: ${probe.title}`);
                 await monitor.startMonitoring(work._id, work.url, work.type, work.save_path);
-                
-                // Since startMonitoring is async/spawn, we need a way to know when it finishes
-                // For now, let's just mark it as "completed" after a while or hook into monitor events
-                // In a real scenario, monitor.js should emit events.
             } catch (err) {
+                console.error(`[Agent] Download start failed:`, err.message);
                 await api.post(`/agent/${work._id}/status`, { status: 'error' });
             }
         }

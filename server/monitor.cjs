@@ -1,4 +1,5 @@
 const { spawn, exec } = require('child_process');
+const fs = require('fs');
 const path = require('path');
 const axios = require('axios');
 const storage = require('./storage.cjs');
@@ -25,6 +26,30 @@ class MonitorManager {
         }
     }
 
+    async probeUrl(url) {
+        return new Promise((resolve) => {
+            console.log(`[Monitor] Probing URL: ${url}`);
+            const ytDlpPath = path.resolve(__dirname, '../yt-dlp.exe');
+            
+            // --simulate: Do not download the video
+            // --get-title: Output the title to stdout if valid
+            const proc = spawn(ytDlpPath, [url, '--simulate', '--get-title']);
+            
+            let output = '';
+            proc.stdout.on('data', (data) => { output += data.toString(); });
+            
+            proc.on('close', (code) => {
+                if (code === 0 && output.trim()) {
+                    console.log(`[Monitor] Probe Success: ${output.trim()}`);
+                    resolve({ success: true, title: output.trim() });
+                } else {
+                    console.log(`[Monitor] Probe Failed for ${url}`);
+                    resolve({ success: false, error: 'No media found or unsupported URL' });
+                }
+            });
+        });
+    }
+
     startMonitoring(channelId, url, type = 'live', savePath = null) {
         if (type === 'live') {
             this.startLiveMonitoring(channelId, url, savePath);
@@ -39,8 +64,15 @@ class MonitorManager {
         console.log(`[Live Monitor] Starting for ${url}`);
         const ytDlpPath = path.resolve(__dirname, '../yt-dlp.exe');
         const downloadDir = savePath ? savePath : 'downloads';
+        const absoluteDownloadDir = path.resolve(__dirname, '..', downloadDir);
+        
+        // Ensure directory exists
+        if (!fs.existsSync(absoluteDownloadDir)) {
+            fs.mkdirSync(absoluteDownloadDir, { recursive: true });
+        }
+
         const filename = `%(uploader)s/%(title)s [%(upload_date)s] [%(id)s].mp4`;
-        const outputTemplate = path.join(path.resolve(__dirname, '..', downloadDir), filename);
+        const outputTemplate = path.join(absoluteDownloadDir, filename);
 
         const args = [
             url,
